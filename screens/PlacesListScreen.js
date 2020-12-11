@@ -1,51 +1,62 @@
-import React from 'react'
-import { Platform, StyleSheet, Text, View } from 'react-native'
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Platform, FlatList } from 'react-native';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux';
 
+import HeaderButton from '../components/HeaderButton';
+import PlaceItem from '../components/PlaceItem';
+import * as placesActions from '../store/places-actions';
 
-import CustomHeaderButton from '../components/HeaderButtons'
-import PlaceItem from '../components/PlaceItem'
+const PlacesListScreen = props => {
+  const places = useSelector(state => state.places.places);
+  const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(placesActions.loadPlaces());
+  }, [dispatch]);
 
-export default function PlacesListScreen(props) {
-
-    const places = useSelector(state => state.places.places)
-
-    return (
-        <View>
-            <Text>PlacesListScrreen</Text>
-            <FlatList
-                data={places}
-                keyExtractor={item => item.id}
-                renderItem={itemData => <PlaceItem
-                    onSelect={props.navigation.navigate("PlaceDetail", {
-                        placeTitle: itemData.item.title,
-                        placeId: itemData.item.id
-                    })}
-                    image={null}
-                    title={itemData.item.title}
-                    address={null}
-                />}
-            />
-        </View>
-    )
-}
-
-const styles = StyleSheet.create({})
-
+  return (
+    <View style={styles.flatList}>
+      <FlatList
+        data={places}
+        keyExtractor={item => item.id}
+        renderItem={itemData => (
+          <PlaceItem
+            image={itemData.item.imageUri}
+            title={itemData.item.title}
+            address={itemData.item.address}
+            onSelect={() => {
+              props.navigation.navigate('PlaceDetail', {
+                placeTitle: itemData.item.title,
+                placeId: itemData.item.id
+              });
+            }}
+          />
+        )}
+      />
+    </View>
+  );
+};
 
 PlacesListScreen.navigationOptions = navData => {
-    return {
-        headerTitle: "Home Site",
-        headerRight: (
-            <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-                <Item
-                    title="Add Place"
-                    iconName={Platform.OS === 'android' ? 'md-add' : 'ios-add'}
-                    onPress={() => { navData.navigation.navigate("NewPlace") }}
-                />
-            </HeaderButtons>
-        ),
-    }
-}
+  return {
+    headerTitle: 'Wszystkie miejsca',
+    headerRight: (
+      <HeaderButtons HeaderButtonComponent={HeaderButton}>
+        <Item
+          title="Dodaj"
+          iconName={Platform.OS === 'android' ? 'md-add' : 'ios-add'}
+          onPress={() => {
+            navData.navigation.navigate('NewPlace');
+          }}
+        />
+      </HeaderButtons>
+    )
+  };
+};
+
+const styles = StyleSheet.create({
+  
+});
+
+export default PlacesListScreen;

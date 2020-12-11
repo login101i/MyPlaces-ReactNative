@@ -1,66 +1,87 @@
-import React, { useState } from 'react'
-import { StyleSheet, Text, TextInput, ScrollView, Button, Image, View } from 'react-native'
-import {useDispatch} from 'react-redux'
+import React, { useState, useCallback } from 'react';
+import {
+  ScrollView,
+  View,
+  Button,
+  Text,
+  TextInput,
+  StyleSheet
+} from 'react-native';
+import { useDispatch } from 'react-redux';
 
+import Colors from '../constants/Colors';
+import * as placesActions from '../store/places-actions';
+import ImagePicker from '../components/ImagePicker';
+import LocationPicker from '../components/LocationPicker';
 
-import Colors from '../constants/Colors'
-import * as placesActions from '../store/placesAction'
+const NewPlaceScreen = props => {
+  const [titleValue, setTitleValue] = useState('');
+  const [selectedImage, setSelectedImage] = useState();
+  const [selectedLocation, setSelectedLocation] = useState();
 
+  const dispatch = useDispatch();
 
-export default function NewPlaceScreen(props) {
+  const titleChangeHandler = text => {
+    // you could add validation
+    setTitleValue(text);
+  };
 
-    const [titleValue, setTitleValue] = useSTate('')
+  const imageTakenHandler = imagePath => {
+    setSelectedImage(imagePath);
+  };
 
-    const titleChangeHandler = (text) => {
-        setTitleValue(text)
-    }
+  const locationPickedHandler = useCallback(location => {
+    setSelectedLocation(location);
+  }, []);
 
-    const savePlaceHandler=()=>{
-        dispatchEvent(placesActions.addPlace(titleValue))
-        props.navigation.goBack()
-    }
+  const savePlaceHandler = () => {
+    dispatch(placesActions.addPlace(titleValue, selectedImage, selectedLocation));
+    props.navigation.goBack();
+  };
 
-    return (
-
-
-        <ScrollView>
-            <View style={styles.form}>
-                <Text style={styles.label}>Tytuł</Text>
-                <TextInput
-                    style={styles.textInput}
-                    onChangeText={titleChagneHandler}
-                    value={titleValue}
-                />
-                <Button
-                    title="save place"
-                    color={Colors.primary}
-                    onPress={savePlaceHandler}
-
-                />
-            </View>
-        </ScrollView>
-
-    )
-}
+  return (
+    <ScrollView>
+      <View style={styles.form}>
+        <Text style={styles.label}>Title</Text>
+        <TextInput
+          style={styles.textInput}
+          onChangeText={titleChangeHandler}
+          value={titleValue}
+        />
+        <ImagePicker onImageTaken={imageTakenHandler} />
+        <LocationPicker
+          navigation={props.navigation}
+          onLocationPicked={locationPickedHandler}
+        />
+        <Button
+          title="Zachowaj miejsce"
+          color={Colors.primary}
+          onPress={savePlaceHandler}
+        />
+      </View>
+    </ScrollView>
+  );
+};
 
 NewPlaceScreen.navigationOptions = {
-    headerTitle: "Dodaj miejsce"
-}
+  headerTitle: 'Dodaj miejsce'
+};
 
 const styles = StyleSheet.create({
-    form: {
-        margin: 30,
-    },
-    label: {
-        fontSize: 18,
-        marginBottom: 15
-    },
-    textInput: {
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-        marginBottom: 15,
-        paddingVertical: 4,
-        paddingHorizontal: 4,
-        textAlign: 'center'
-    }
-})
+  form: {
+    margin: 30
+  },
+  label: {
+    fontSize: 18,
+    marginBottom: 15
+  },
+  textInput: {
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    marginBottom: 15,
+    paddingVertical: 4,
+    paddingHorizontal: 2
+  }
+});
+
+export default NewPlaceScreen;
